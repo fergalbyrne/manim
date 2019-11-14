@@ -57,7 +57,8 @@ class PiCreature(SVGMobject):
         try:
             svg_file = os.path.join(
                 PI_CREATURE_DIR,
-                "%s_%s.svg" % (self.file_name_prefix, mode)
+                "PiCreatures_plain.svg"
+                #"%s_%s.svg" % (self.file_name_prefix, mode)
             )
             SVGMobject.__init__(self, file_name=svg_file, **kwargs)
         except Exception:

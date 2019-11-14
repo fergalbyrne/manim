@@ -52,7 +52,8 @@ class ImageMobject(AbstractImageMobject):
     def __init__(self, filename_or_array, **kwargs):
         digest_config(self, kwargs)
         if isinstance(filename_or_array, str):
-            path = get_full_raster_image_path(filename_or_array)
+            path=self.select_image(filename_or_array)
+            #path = get_full_raster_image_path(filename_or_array)
             image = Image.open(path).convert(self.image_mode)
             self.pixel_array = np.array(image)
         else:
@@ -62,6 +63,18 @@ class ImageMobject(AbstractImageMobject):
             self.pixel_array[:, :, :3] = 255 - self.pixel_array[:, :, :3]
         AbstractImageMobject.__init__(self, **kwargs)
 
+    def select_image(self,file_name):
+        extensions=[".jpg", ".png", ".gif"]
+        possible_paths = [file_name]
+        possible_paths += [
+            os.path.join(RASTER_IMAGE_DIR, file_name + extension)
+            for extension in ["", *extensions]
+        ]
+        possible_paths+=[os.path.join(RASTER_IMAGE_DIR, "generic.png")]
+        for path in possible_paths:
+            if os.path.exists(path):
+                return path
+                
     def change_to_rgba_array(self):
         pa = self.pixel_array
         if len(pa.shape) == 2:

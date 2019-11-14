@@ -2213,17 +2213,24 @@ class LorenzVectorField(ExternallyAnimatedScene):
 
 class ThreeBodiesInSpace(SpecialThreeDScene):
     CONFIG = {
-        "masses": [1, 6, 3],
+        "masses": [1, 6, 3], # [1, 6, 3],
         "colors": [RED_E, GREEN_E, BLUE_E],
         "G": 0.5,
-        "play_time": 60,
+        "play_time": 90, # 60,
+        "no_shadows": False,
     }
 
     def construct(self):
         self.add_axes()
         self.add_bodies()
-        self.add_trajectories()
-        self.let_play()
+        if self.no_shadows:
+            self.add_trajectories()
+            self.let_play()
+        else:
+            self.add_shadows()
+            self.add_trajectories()
+            self.add_shadow_trajectories()
+            self.let_play_both()
 
     def add_axes(self):
         axes = self.axes = self.get_axes()
@@ -2244,7 +2251,7 @@ class ThreeBodiesInSpace(SpecialThreeDScene):
         bodies = self.bodies = VGroup()
         velocity_vectors = VGroup()
 
-        centers = self.get_initial_positions()
+        centers = self.init_centers = self.get_initial_positions()
 
         for mass, color, center in zip(masses, colors, centers):
             body = self.get_sphere(
@@ -2256,7 +2263,7 @@ class ThreeBodiesInSpace(SpecialThreeDScene):
             )
             body.set_opacity(0.75)
             body.mass = mass
-            body.radius = 0.08 * np.sqrt(mass)
+            body.radius = 0.06 * np.sqrt(mass) # 0.08
             body.set_width(2 * body.radius)
 
             body.point = center
@@ -2284,10 +2291,69 @@ class ThreeBodiesInSpace(SpecialThreeDScene):
             body.shift(-center_of_mass)
             body.velocity -= average_momentum
 
+    def perturb_centers(self, centers, scale=0.1):
+        centers = [center + np.dot(
+            scale * (np.random.random(3) - 0.5),
+            [RIGHT, UP, OUT])
+            for center in centers]
+        return centers
+
+    def add_shadows(self):
+        masses = self.masses
+        colors = self.colors
+
+        bodies = self.shadows = VGroup()
+        velocity_vectors = VGroup()
+
+        centers = self.perturb_centers(self.init_centers, scale=0.1)
+        #self.init_centers + np.dot(
+        #    0.3 * (np.random.random(3) - 0.5),
+        #    [RIGHT, UP, OUT]
+        #)
+
+        for mass, color, center in zip(masses, colors, centers):
+            body = self.get_sphere(
+                checkerboard_colors=[
+                    color, color
+                ],
+                color=color,
+                stroke_width=0.1,
+            )
+            body.set_opacity(0.35)
+            body.mass = mass
+            body.radius = 0.06 * np.sqrt(mass) # 0.08
+            body.set_width(2 * body.radius)
+
+            body.point = center
+            body.move_to(center)
+
+            body.velocity = self.get_initial_velocity(
+                center, centers, mass
+            )
+
+            vect = self.get_velocity_vector_mob(body)
+
+            bodies.add(body)
+            velocity_vectors.add(vect)
+
+        total_mass = np.sum([body.mass for body in bodies])
+        center_of_mass = reduce(op.add, [
+            body.mass * body.get_center() / total_mass
+            for body in bodies
+        ])
+        average_momentum = reduce(op.add, [
+            body.mass * body.velocity / total_mass
+            for body in bodies
+        ])
+        for body in bodies:
+            body.shift(-center_of_mass)
+            body.velocity -= average_momentum
+
+
     def get_initial_positions(self):
         return [
             np.dot(
-                4 * (np.random.random(3) - 0.5),
+                6 * (np.random.random(3) - 0.5),
                 [RIGHT, UP, OUT]
             )
             for x in range(len(self.masses))
@@ -2318,12 +2384,40 @@ class ThreeBodiesInSpace(SpecialThreeDScene):
             traj.add_updater(update_trajectory)
             self.add(traj, body)
 
+    def add_shadow_trajectories(self):
+        def update_trajectory(traj, dt):
+            new_point = traj.body.point
+            if get_norm(new_point - traj.points[-1]) > 0.01:
+                traj.add_smooth_curve_to(new_point)
+
+        for body in self.shadows:
+            traj = VMobject()
+            traj.body = body
+            traj.start_new_path(body.point)
+            traj.set_stroke(body.color, 1, opacity=0.45)
+            traj.add_updater(update_trajectory)
+            self.add(traj, body)
+
     def let_play(self):
         bodies = self.bodies
         bodies.add_updater(self.update_bodies)
         # Break it up to see partial files as
         # it's rendered
         self.add(bodies)
+        for x in range(int(self.play_time)):
+            self.wait()
+
+    def let_play_both(self):
+        bodies = self.bodies
+        bodies.add_updater(self.update_bodies)
+        # Break it up to see partial files as
+        # it's rendered
+        self.add(bodies)
+        shadows = self.shadows
+        shadows.add_updater(self.update_bodies)
+        # Break it up to see partial files as
+        # it's rendered
+        self.add(shadows)
         for x in range(int(self.play_time)):
             self.wait()
 
@@ -2377,12 +2471,13 @@ class AltThreeBodiesInSpace(ThreeBodiesInSpace):
 
 class TwoBodiesInSpace(ThreeBodiesInSpace):
     CONFIG = {
-        "colors": [GREY, BLUE],
-        "masses": [6, 36],
-        "play_time": 60,
+        "colors": [BLUE, ORANGE], # [GREY, BLUE],
+        "masses": [6, 36], # [6, 36],
+        "play_time": 60, # 60,
+        "no_shadows": False,
     }
 
-    def construct(self):
+    def Xconstruct(self):
         self.add_axes()
         self.add_bodies()
         self.add_trajectories()
@@ -2390,9 +2485,34 @@ class TwoBodiesInSpace(ThreeBodiesInSpace):
         self.add_force_vectors()
         self.let_play()
 
+    def construct(self):
+        self.add_axes()
+        self.add_bodies()
+        if self.no_shadows:
+            self.add_trajectories()
+            self.add_velocity_vectors()
+            self.add_force_vectors()
+            self.let_play()
+        else:
+            self.add_shadows()
+            self.add_trajectories()
+            self.add_shadow_trajectories()
+            self.add_velocity_vectors()
+            self.add_force_vectors()
+            self.let_play_both()
+
+
     def add_bodies(self):
         super().add_bodies()
         for body in self.bodies:
+            body.point = 3 * normalize(body.get_center())
+            # body.point += 2 * IN
+            # body.velocity += (4 / 60) * OUT
+            body.move_to(body.point)
+
+    def add_shadows(self):
+        super().add_shadows()
+        for body in self.shadows:
             body.point = 3 * normalize(body.get_center())
             # body.point += 2 * IN
             # body.velocity += (4 / 60) * OUT

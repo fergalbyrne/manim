@@ -6,6 +6,8 @@ VIDEO_DIR = ""
 VIDEO_OUTPUT_DIR = ""
 TEX_DIR = ""
 TEXT_DIR = ""
+FILE_DIR = ""
+SVG_IMAGE_DIR = ""
 
 
 def initialize_directories(config):
@@ -14,6 +16,7 @@ def initialize_directories(config):
     global VIDEO_OUTPUT_DIR
     global TEX_DIR
     global TEXT_DIR
+    global SVG_IMAGE_DIR
 
     video_path_specified = config["video_dir"] or config["video_output_dir"]
 
@@ -40,6 +43,8 @@ def initialize_directories(config):
 
     TEX_DIR = config["tex_dir"] or os.path.join(MEDIA_DIR, "Tex")
     TEXT_DIR = os.path.join(MEDIA_DIR, "texts")
+    SVG_IMAGE_DIR = os.path.join(MEDIA_DIR, "svg_images")
+    RASTER_IMAGE_DIR = os.path.join(MEDIA_DIR, "raster_images")
     if not video_path_specified:
         VIDEO_DIR = os.path.join(MEDIA_DIR, "videos")
         VIDEO_OUTPUT_DIR = os.path.join(MEDIA_DIR, "videos")
@@ -71,7 +76,7 @@ ITALIC = 'ITALIC'
 OBLIQUE = 'OBLIQUE'
 BOLD = 'BOLD'
 
-TEX_USE_CTEX = False
+TEX_USE_CTEX = True
 TEX_TEXT_TO_REPLACE = "YourTextHere"
 TEMPLATE_TEX_FILE = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -124,7 +129,7 @@ PRODUCTION_QUALITY_CAMERA_CONFIG = {
 HIGH_QUALITY_CAMERA_CONFIG = {
     "pixel_height": 1080,
     "pixel_width": 1920,
-    "frame_rate": 60,
+    "frame_rate": 60, # 60
 }
 
 MEDIUM_QUALITY_CAMERA_CONFIG = {
@@ -141,7 +146,7 @@ LOW_QUALITY_CAMERA_CONFIG = {
 
 DEFAULT_PIXEL_HEIGHT = PRODUCTION_QUALITY_CAMERA_CONFIG["pixel_height"]
 DEFAULT_PIXEL_WIDTH = PRODUCTION_QUALITY_CAMERA_CONFIG["pixel_width"]
-DEFAULT_FRAME_RATE = 60
+DEFAULT_FRAME_RATE = 30 # 60
 
 DEFAULT_POINT_DENSITY_2D = 25
 DEFAULT_POINT_DENSITY_1D = 250

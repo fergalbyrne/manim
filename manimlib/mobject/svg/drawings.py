@@ -416,7 +416,7 @@ class Bubble(SVGMobject):
         "height": 5,
         "width": 8,
         "bubble_center_adjustment_factor": 1. / 8,
-        "file_name": None,
+        "file_name": "Bubbles_speech.svg",
         "fill_color": BLACK,
         "fill_opacity": 0.8,
         "stroke_color": WHITE,
@@ -428,7 +428,7 @@ class Bubble(SVGMobject):
         if self.file_name is None:
             raise Exception("Must invoke Bubble subclass")
         try:
-            SVGMobject.__init__(self, **kwargs)
+            SVGMobject.__init__(self,file_name="Bubbles_speech" ,**kwargs)
         except IOError as err:
             self.file_name = os.path.join(FILE_DIR, self.file_name)
             SVGMobject.__init__(self, **kwargs)

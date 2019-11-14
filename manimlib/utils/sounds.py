@@ -33,7 +33,14 @@ def play_finish_sound():
 
 def get_full_sound_file_path(sound_file_name):
     return seek_full_path_from_defaults(
-        sound_file_name,
+        select_sound(sound_file_name),
         default_dir=os.path.join("assets", "sounds"),
         extensions=[".wav", ".mp3"]
     )
+
+def select_sound(sound_file_name):
+    try_sound=os.path.join(SOUND_DIR, sound_file_name)
+    if os.path.exists(try_sound):
+        return sound_file_name
+    else:
+        return "generic_sound"
